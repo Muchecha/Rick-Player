@@ -7,4 +7,9 @@
     <RootNamespace>Rick_Player.Main</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MudBlazor" Version="6.1.8" />
+    <PackageReference Include="MudBlazor.ThemeManager" Version="1.0.7" />
+  </ItemGroup>
+
 </Project>

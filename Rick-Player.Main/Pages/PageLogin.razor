@@ -1,24 +1,20 @@
 ﻿@page "/login"
 
-
-<PageTitle>Login</PageTitle>
-
-<h1>Faça o login</h1>
-
-<p role="status">Quantidade de login: @currentCount</p>
-
-<button class="btn btn-primary" @onclick="IncrementCount">Click aqui para fazer Login</button>
-
-@code {
-    private int currentCount = 0;
-
-    private void IncrementCount()
-    {
-        currentCount++;
-    }
-}
-
+<MudMainContent Class="pt-16 px-16">
+    <MudContainer Class="mt-6">
+        <MudAlert Severity="Severity.Success" Class="mt-16">Faça o login</MudAlert>
+    </MudContainer>
+    <MudSpacer/>
+    <MudText Typo="Typo.overline" Align="Align.Center">
+        <b>Center</b> Lorem ipsum dolor sit amet ipsum dolor sit amet ipsum dolor
+        sit amet ipsum dolor sit amet ipsum dolor sit amet ipsum dolor
+        sit amet ipsum dolor sit amet ipsum dolor sit amet.
+    </MudText>
+    <MudPaper Class="pa-4" Style="@($"color:{Theme.Palette.SuccessLighten}; background:{Theme.Palette.Dark};")">
+        Dark with Success lighten
+    </MudPaper>
+</MudMainContent>
 
 @code {
-
+    private MudTheme Theme = new MudTheme();
 }
