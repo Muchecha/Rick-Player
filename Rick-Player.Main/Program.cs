@@ -1,12 +1,13 @@
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Rick_Player.Main.Data;
 using MudBlazor.Services;
-using Rick_Player.Main.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor(options => options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(10));
-// builder.Services.AddSingleton<>();
+builder.Services.AddServerSideBlazor();
 // builder.Services.AddSingleton<>();
 builder.Services.AddMudServices();
 
