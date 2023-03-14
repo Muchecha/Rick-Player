@@ -9,7 +9,7 @@ namespace Rick_Player.Main.Services.ResquestAPI;
 public class YoutubeManager
 {
     private const string ApiAddress = "https://accounts.google.com/o/oauth2/v2/auth";
-    private const string Scopes = "https://www.googleapis.com/auth/youtube";  // TODO: use String.Join
+    private const string Scopes = "https://www.googleapis.com/auth/youtube";
     private const string AcesseType = "offline";
 
     private static readonly string ClientId;
@@ -39,6 +39,7 @@ public class YoutubeManager
             throw new YoutubeApiException("Environment Variable 'YOUTUBE_CLIENT_ID' was not found.");
         if(clientSecret is null)
             throw new YoutubeApiException("Environment Variable 'YOUTUBE_CLIENT_SECRET' was not found.");
+        
         ClientId = clientId ?? throw new YoutubeApiException("Environment Variable 'YOUTUBE_CLIENT_ID' was not found.");
         ClientSecret = clientSecret ?? throw new YoutubeApiException("Environment Variable 'YOUTUBE_CLIENT_SECRET' was not found.");
 
@@ -61,20 +62,20 @@ public class YoutubeManager
         KeyValuePair<string, string?>[] parameters = new[]
         {
             new KeyValuePair<string, string?>("client_id", ClientId),
-            new KeyValuePair<string, string?>("redirect_uri", _redirectUri),
+            new KeyValuePair<string, string?>("redirect_uri", "https://localhost:44357/validate"),
             new KeyValuePair<string, string?>("response_type", "code"),
             new KeyValuePair<string, string?>("scope", Scopes),
             new KeyValuePair<string, string?>("acess_type", AcesseType),
             new KeyValuePair<string, string?>("state", state)
         };
 
-        return new Uri("https://accounts.spotify.com/authorize" + QueryString.Create(parameters).ToString());
+        return new Uri("https://accounts.google.com/o/oauth2/v2/auth" + QueryString.Create(parameters).ToString());
     }
 
     public async Task<Tokens> RequestAccessAndRefreshTokensAsync(string authCode, string originalStateCode, string returnedStateCode)
     {
         if(originalStateCode != returnedStateCode)
-            throw new YoutubeApiException("Invalid state code returned by the server.");    // TODO: make this catchable
+            throw new YoutubeApiException("Invalid state code returned by the server."); 
 
         var content = new FormUrlEncodedContent(new[]
         {
@@ -113,7 +114,7 @@ public class YoutubeManager
         });
 
         SetBasicAuthHeader();
-        using HttpResponseMessage httpResponse = await HttpClient.PostAsync("https://accounts.spotify.com/api/token", content);
+        using HttpResponseMessage httpResponse = await HttpClient.PostAsync("https://oauth2.googleapis.com/token", content);
 
         httpResponse.EnsureSuccessStatusCode();
 
