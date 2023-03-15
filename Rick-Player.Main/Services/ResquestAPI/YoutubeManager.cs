@@ -8,13 +8,18 @@ namespace Rick_Player.Main.Services.ResquestAPI;
 
 public class YoutubeManager
 {
-    private const string ApiAddress = "https://accounts.google.com/o/oauth2/v2/auth";
-    private const string Scopes = "https://www.googleapis.com/auth/youtube";
     private const string AcesseType = "offline";
+    private const string ApiKey = "AIzaSyBpYkRFY2fJdOFHhw8W7hRexY4k2pA14CY";
+    private const string Scopes = "https://www.googleapis.com/auth/youtube";
+    private const string OAuth = "https://accounts.google.com/o/oauth2/v2/auth";
+    private const string SearchEndPoint = "https://www.googleapis.com/youtube/v3/search";
+    private const string EndPoint = "https://www.googleapis.com/youtube/v3";
+    private const string RefreshToken = "1//0h249N9l8i3MeCgYIARAAGBESNwF-L9IrUuFrA0lPOkpPI8ECzG9IDHukOew4Ji27Eh5NhDBTliLkhNVPVX6NqEYRULb67UxcP4E";
 
     private static readonly string ClientId;
     private static readonly string ClientSecret;
-    private static readonly HttpClient HttpClient; // NOTE: being static means only one header... TODO: make this non-static and call SetBearerAuthHeader() in every request
+
+    private static readonly HttpClient HttpClient;
 
     private readonly string _redirectUri;
 
@@ -32,16 +37,13 @@ public class YoutubeManager
 
     static YoutubeManager()
     {
-        string? clientId = ( "751770806331-bp6btpu43rjird4b0d4n4k8akcm0550n.apps.googleusercontent.com" );
-        string? clientSecret = ( "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" );
+        string? clientId = ("751770806331-bp6btpu43rjird4b0d4n4k8akcm0550n.apps.googleusercontent.com");
+        string? clientSecret = ("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");
 
-        if(clientId is null)
+        if (clientId is null)
             throw new YoutubeApiException("Environment Variable 'YOUTUBE_CLIENT_ID' was not found.");
-        if(clientSecret is null)
+        if (clientSecret is null)
             throw new YoutubeApiException("Environment Variable 'YOUTUBE_CLIENT_SECRET' was not found.");
-        
-        ClientId = clientId ?? throw new YoutubeApiException("Environment Variable 'YOUTUBE_CLIENT_ID' was not found.");
-        ClientSecret = clientSecret ?? throw new YoutubeApiException("Environment Variable 'YOUTUBE_CLIENT_SECRET' was not found.");
 
         ClientId = clientId;
         ClientSecret = clientSecret;
@@ -54,8 +56,12 @@ public class YoutubeManager
         _redirectUri = redirectUri;
     }
 
-    private void SetBasicAuthHeader() => HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", $"{Convert.ToBase64String(Encoding.ASCII.GetBytes($"{ClientId}:{ClientSecret}"))}");
-    private void SetBearerAuthHeader(string accessToken) => HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+    private void SetBasicAuthHeader() => HttpClient.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("Basic",
+            $"{Convert.ToBase64String(Encoding.ASCII.GetBytes($"{ClientId}:{ClientSecret}"))}");
+
+    private void SetBearerAuthHeader(string accessToken) => HttpClient.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("Bearer", accessToken);
 
     public Uri RequestUserAuthorizationUri(string state)
     {
@@ -65,39 +71,44 @@ public class YoutubeManager
             new KeyValuePair<string, string?>("redirect_uri", "https://localhost:44357/validate"),
             new KeyValuePair<string, string?>("response_type", "code"),
             new KeyValuePair<string, string?>("scope", Scopes),
-            new KeyValuePair<string, string?>("acess_type", AcesseType),
+            new KeyValuePair<string, string?>("access_type", AcesseType),
             new KeyValuePair<string, string?>("state", state)
         };
 
-        return new Uri("https://accounts.google.com/o/oauth2/v2/auth" + QueryString.Create(parameters).ToString());
+        return new Uri(OAuth + QueryString.Create(parameters).ToString());
     }
 
-    public async Task<Tokens> RequestAccessAndRefreshTokensAsync(string authCode, string originalStateCode, string returnedStateCode)
+    public async Task<Tokens> RequestAccessAndRefreshTokensAsync(string authCode, string originalStateCode,
+        string returnedStateCode)
     {
-        if(originalStateCode != returnedStateCode)
-            throw new YoutubeApiException("Invalid state code returned by the server."); 
+        if (originalStateCode != returnedStateCode)
+            throw new YoutubeApiException("Invalid state code returned by the server.");
 
         var content = new FormUrlEncodedContent(new[]
         {
-            new KeyValuePair<string, string?>("grant_type", "authorization_code"),
+            new KeyValuePair<string, string?>("client_id", ClientId),
+            new KeyValuePair<string, string?>("client_secret", ClientSecret),
             new KeyValuePair<string, string?>("code", authCode),
-            new KeyValuePair<string, string?>("redirect_uri", _redirectUri)
+            new KeyValuePair<string, string?>("grant_type", "authorization_code"),
+            new KeyValuePair<string, string?>("redirect_uri", "https://localhost:44357/validate")
         });
 
         SetBasicAuthHeader();
-        using HttpResponseMessage httpResponse = await HttpClient.PostAsync("https://oauth2.googleapis.com/token", content);
+        using HttpResponseMessage httpResponse =
+            await HttpClient.PostAsync("https://oauth2.googleapis.com/token", content);
 
         httpResponse.EnsureSuccessStatusCode();
 
         using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
 
         string? accessToken = jsonResponse.RootElement.GetProperty("access_token").GetString();
-        string? refreshToken = jsonResponse.RootElement.GetProperty("refresh_token").GetString();
+        // string? refreshToken = jsonResponse.RootElement.GetProperty("refresh_token").GetString();
+        string? refreshToken = RefreshToken;
 
-        if(accessToken is null)
+        if (accessToken is null)
             throw new YoutubeApiException("Returned access token is null.");
 
-        if(refreshToken is null)
+        if (refreshToken is null)
             throw new YoutubeApiException("Returned refresh token is null.");
 
         SetBearerAuthHeader(accessToken);
@@ -114,7 +125,8 @@ public class YoutubeManager
         });
 
         SetBasicAuthHeader();
-        using HttpResponseMessage httpResponse = await HttpClient.PostAsync("https://oauth2.googleapis.com/token", content);
+        using HttpResponseMessage httpResponse =
+            await HttpClient.PostAsync("https://oauth2.googleapis.com/token", content);
 
         httpResponse.EnsureSuccessStatusCode();
 
@@ -122,7 +134,7 @@ public class YoutubeManager
 
         string? newAccessToken = jsonResponse.RootElement.GetProperty("access_token").GetString();
 
-        if(newAccessToken is null)
+        if (newAccessToken is null)
             throw new YoutubeApiException("Returned access token is null.");
 
         SetBearerAuthHeader(newAccessToken);
@@ -132,15 +144,15 @@ public class YoutubeManager
 
     public async Task<Track?> GetCurrentlyPlayingAsync()
     {
-        using HttpResponseMessage httpResponse = await HttpClient.GetAsync(ApiAddress + "/me/player/currently-playing");
+        using HttpResponseMessage httpResponse = await HttpClient.GetAsync(EndPoint + "/search");
 
         httpResponse.EnsureSuccessStatusCode();
 
-        if(httpResponse.StatusCode == HttpStatusCode.OK)
+        if (httpResponse.StatusCode == HttpStatusCode.OK)
         {
             using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
 
-            Track currentTrack = GetTrackFromJson(jsonResponse.RootElement.GetProperty("item"));
+            Track currentTrack = GetTrackFromJson(jsonResponse.RootElement.GetProperty("items"));
 
             currentTrack.ProgressMs = jsonResponse.RootElement.GetProperty("progress_ms").GetInt32();
 
@@ -152,21 +164,25 @@ public class YoutubeManager
 
     public async Task<List<Track>> SearchTracksAsync(string searchFor)
     {
-        KeyValuePair<string, string?>[] parameters = new[]
+        KeyValuePair<string, string>[] parameters = new[]
         {
-            new KeyValuePair<string, string?>("q", searchFor),
-            new KeyValuePair<string, string?>("type", "track"),
-            new KeyValuePair<string, string?>("limit", "10")
+            new KeyValuePair<string, string>("part", "snippet"),
+            new KeyValuePair<string, string>("q", searchFor),
+            new KeyValuePair<string, string>("type", "youtube#video"),
+            new KeyValuePair<string, string>("maxResults", "10"),
+            new KeyValuePair<string, string>("key", ApiKey)
         };
 
-        using HttpResponseMessage httpResponse = await HttpClient.GetAsync(ApiAddress + "/search" + QueryString.Create(parameters));
+        using HttpResponseMessage httpResponse =
+            await HttpClient.GetAsync(SearchEndPoint + QueryString.Create(parameters!));
 
         httpResponse.EnsureSuccessStatusCode();
 
         JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
 
         List<Track> searchedTracks = new();
-        foreach(JsonElement item in jsonResponse.RootElement.GetProperty("tracks").GetProperty("items").EnumerateArray())
+        foreach (JsonElement item in jsonResponse.RootElement.GetProperty("tracks").GetProperty("items")
+                     .EnumerateArray())
             searchedTracks.Add(GetTrackFromJson(item));
 
         return searchedTracks;
@@ -174,7 +190,9 @@ public class YoutubeManager
 
     public async Task AddToPlaybackQueueAsync(Track track)
     {
-        using HttpResponseMessage httpResponse = await HttpClient.PostAsync(ApiAddress + "/me/player/queue" + QueryString.Create("uri", $"spotify:track:{track.VideoId}"), null);
+        using HttpResponseMessage httpResponse =
+            await HttpClient.PostAsync(
+                OAuth + "/me/player/queue" + QueryString.Create("uri", $"spotify:track:{track.VideoId}"), null);
 
         httpResponse.EnsureSuccessStatusCode();
     }
@@ -188,10 +206,10 @@ public class YoutubeManager
         track.AlbumName = item.GetProperty("album").GetProperty("name").GetString();
         track.DurationMs = item.GetProperty("duration_ms").GetInt32();
 
-        foreach(JsonElement cover in item.GetProperty("album").GetProperty("images").EnumerateArray())
+        foreach (JsonElement cover in item.GetProperty("album").GetProperty("images").EnumerateArray())
             track.CoverSizesUrl.Add(cover.GetProperty("url").GetString());
 
-        foreach(JsonElement artist in item.GetProperty("artists").EnumerateArray())
+        foreach (JsonElement artist in item.GetProperty("artists").EnumerateArray())
             track.ArtistNames.Add(artist.GetProperty("name").GetString());
 
         return track;
