@@ -1,0 +1,19 @@
+﻿@using Rick_Player.Main.Components
+
+<MudMainContent>
+    <MudContainer MaxWidth="MaxWidth.Small" Class="my-4 py-4 d-flex justify-center">
+        <MudStack Class="gap-16">
+            @Body
+
+            <MudDivider />
+
+            <MudText Typo="Typo.body2" Align="Align.Center" Class="mt-n6 mb-1">
+                Direitos Reservado.
+            </MudText>
+        </MudStack>
+    </MudContainer>
+</MudMainContent>
+
+@code {
+    [Parameter, EditorRequired] public RenderFragment? Body { get; set; }
+}
