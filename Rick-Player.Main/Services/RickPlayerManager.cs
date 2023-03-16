@@ -1,7 +1,7 @@
 ﻿using Rick_Player.Main.Data;
-using Rick_Player.Main.Services.ResquestAPI;
 using System.Net;
-using static Rick_Player.Main.Services.TimerManager;
+using Rick_Player.Main.Data;
+using Rick_Player.Main.Services.ResquestAPI;
 
 namespace Rick_Player.Main.Services;
 
@@ -62,7 +62,7 @@ public class RickPlayerManager
             throw;
         }
     }
-    private async Task SpotifyRefreshAccessTokenAsync()
+    private async Task youtubeRefreshAccessTokenAsync()
     {
         try
         {
@@ -73,7 +73,7 @@ public class RickPlayerManager
             throw;
         }
     }
-    private async Task<Track> SpotifyGetCurrentlyPlayingAsync()
+    private async Task<Track> YoutubeGetCurrentlyPlayingAsync()
     {
         try
         {
@@ -113,7 +113,7 @@ public class RickPlayerManager
             }
         }
     }
-    private async Task SpotifyAddToPlaybackQueueAsync(Track track)
+    private async Task YoutubeAddToPlaybackQueueAsync(Track track)
     {
         try
         {
@@ -236,7 +236,7 @@ public class RickPlayerManager
 
     private async void OnTimerElapsedAsync(object source, EventArgs args)
     {
-        Track newestTrack = await SpotifyGetCurrentlyPlayingAsync();
+        Track newestTrack = await YoutubeGetCurrentlyPlayingAsync();
         Vote? nextVote = TryPeekVotingQueue();
 
         if (newestTrack.VideoId != CurrentlyPlayingVote.VotedTrack.VideoId)
@@ -249,12 +249,12 @@ public class RickPlayerManager
                 CurrentlyPlayingVote = nextVote;
             }
             else
-                CurrentlyPlayingVote = new Vote(newestTrack, new Client("0", "Spotify"));
+                CurrentlyPlayingVote = new Vote(newestTrack, new Client("0", "Youtube"));
         }
 
         if (nextVote is not null && !nextVote.IsOnYoutubeQueue && (newestTrack.DurationMs - newestTrack.ProgressMs) < _loopPeriodInMs * 2)
         {
-            await SpotifyAddToPlaybackQueueAsync(nextVote.VotedTrack);
+            await YoutubeAddToPlaybackQueueAsync(nextVote.VotedTrack);
             nextVote.IsOnYoutubeQueue = true;
         }
 
@@ -274,7 +274,7 @@ public class RickPlayerManager
         try
         {
             if (exception.StatusCode == HttpStatusCode.Unauthorized)
-                await SpotifyRefreshAccessTokenAsync();
+                await youtubeRefreshAccessTokenAsync();
         }
         catch (Exception)
         {

@@ -22,7 +22,7 @@
     </MudText>
 
 
-    <MudDivider />
+    <MudDivider/>
 
 
     <MudText Typo="Typo.body1" Align="Align.Center">
@@ -32,11 +32,11 @@
         Brincadeirinha, aqui temos espaço para todos os gostos! De Metallica à Lady Gaga, faça do Rick Player a sua casa!
     </MudText>
 
-    <MudTextField @bind-Value="_clientNameInput" Label="Seja criativo! Você pode usar o seu emoji favorito ao lado do seu nome." 
-                  HelperText="Seja criativo! Você pode usar o seu emoji favorito ao lado do seu nome." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Edit" AdornmentColor="Color.Primary" />
+    <MudTextField @bind-Value="_clientNameInput" Label="Seja criativo! Você pode usar o seu emoji favorito ao lado do seu nome."
+                  HelperText="Seja criativo! Você pode usar o seu emoji favorito ao lado do seu nome." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Edit" AdornmentColor="Color.Primary"/>
 
 
-    <MudDivider />
+    <MudDivider/>
 
 
     <MudText Class="mb-n6" Typo="Typo.body1" Align="Align.Center">
@@ -63,7 +63,7 @@
 
 
 @code {
-    private const int _MAX_CHARS = 26;
+        private const int _MAX_CHARS = 26;
 
     private string? _clientNameInput;
     private bool _showErrorDialog = false;
@@ -125,4 +125,5 @@
 
         await LocalStorage.SetAsync("this_client", thisClient);
     }
+
 }
