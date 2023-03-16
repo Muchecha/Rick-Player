@@ -1,38 +1,30 @@
 ﻿@inherits LayoutComponentBase
 
-<MudThemeProvider/>
-<MudDialogProvider/>
-<MudSnackbarProvider/>
+@using Rick_Player.Main.Components
+
+<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Color="Color.Transparent" Elevation="1">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer"/>
-        <MudSpacer/>
-        <MudText Typo="Typo.button" Align="Align.Center"><b>Rick Player</b></MudText>
-        <MudSpacer/>
-        <MudIconButton Icon="@Icons.Custom.Brands.LinkedIn" Color="Color.Info" Link="https://www.linkedin.com/in/murilo-nascimento-48b32b170/" Target="_blank"/>
-        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Primary" Link="https://github.com/Muchecha/Rick-Player" Target="_blank"/>
-        <MudIconButton Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Primary" Link="https://github.com/MudBlazor/MudBlazor" Target="_blank"/>
-    </MudAppBar>
-    <MudDrawer @bind-Open="@open" Elevation="1">
-        <MudDrawerHeader>
-            <MudText Typo="Typo.h6">Menu</MudText>
-        </MudDrawerHeader>
-        <MudNavMenu>
-            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Inherit">Home</MudNavLink>
-            <MudNavLink Href="login" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Login" IconColor="Color.Inherit">Login</MudNavLink>
-            <MudNavLink Href="playlist" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.PlaylistAdd" IconColor="Color.Inherit">Play List</MudNavLink>
-            <MudNavLink Href="search" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Search" IconColor="Color.Inherit">Pesquisar</MudNavLink>
-        </MudNavMenu>
+    <AppBar ShowMenuButton="true" OnClickCallback="DrawerToggle"/>
+
+    <MudDrawer @bind-Open="_isDrawerOpen" Elevation="1" Variant="@DrawerVariant.Mini" ClipMode="DrawerClipMode.Always">
+        <NavMenu />
     </MudDrawer>
+
+    @if (Body is not null)
+    {
+        <MainContent Body="@Body" />
+    }
 </MudLayout>
 
-@code{
-    bool open = false;
+@code {
+    bool _isDrawerOpen = true;
+    bool _isDarkMode = true;
 
-    void ToggleDrawer()
+    void DrawerToggle()
     {
-        open = !open;
+        _isDrawerOpen = !_isDrawerOpen;
     }
-
 }

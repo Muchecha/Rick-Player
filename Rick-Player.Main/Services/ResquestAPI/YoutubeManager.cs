@@ -1,4 +1,10 @@
-﻿namespace Rick_Player.Main.Services.ResquestAPI;
+﻿using Rick_Player.Main.Data;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+
+namespace Rick_Player.Main.Services.ResquestAPI;
 
 public class YoutubeManager
 {
