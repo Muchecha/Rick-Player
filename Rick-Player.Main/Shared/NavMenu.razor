@@ -1,12 +1,12 @@
-﻿<MudNavMenu Color="Color.Primary">
-    <MudNavLink Href="currently-playing" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.PlayCircle">Tocando</MudNavLink>
-    <MudNavLink Href="queue" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.QueueMusic">Fila de prioridade</MudNavLink>
-    <MudNavLink Href="search" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Search">Busca</MudNavLink>
+﻿
 
-    <br />
-    <MudDivider DividerType="DividerType.Middle"/>
-    <br />
 
-    <MudNavLink Href="help" Match="NavLinkMatch.Prefix" Icon="@Icons.Filled.Help">Ajuda</MudNavLink>
-    <MudNavLink Href="info" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Info">Sobre</MudNavLink>
-</MudNavMenu>
+@code{
+    bool open = false;
+
+    void ToggleDrawer()
+    {
+        open = !open;
+    }
+
+}
