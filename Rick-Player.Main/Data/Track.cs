@@ -13,7 +13,7 @@ public class Track
     public List<string?> ArtistNames { get; set; } = new();
 
     public string? VideoId { get; set; }
-    public string? SongName { get; set; }
+    public string? Name { get; set; }
     public string? AlbumName { get; set; }
     public int DurationMs { get; set; }
     public int? ProgressMs  { get; set; }
@@ -21,7 +21,7 @@ public class Track
     public Track MakeThisDummy()
     {
         VideoId = "0";
-        SongName = "Nothing being played";
+        Name = "Nothing being played";
         AlbumName = "No album";
         DurationMs = 0;
         ArtistNames = new() { "No artist" };
