@@ -11,10 +11,12 @@ public class YoutubeManager
     private const string AcesseType = "offline";
     private const string ApiKey = "AIzaSyBpYkRFY2fJdOFHhw8W7hRexY4k2pA14CY";
     private const string Scopes = "https://www.googleapis.com/auth/youtube";
-    private const string OAuth = "https://accounts.google.com/o/oauth2/v2/auth";
-    private const string SearchEndPoint = "https://www.googleapis.com/youtube/v3/search";
-    private const string EndPoint = "https://www.googleapis.com/youtube/v3";
     private const string RefreshToken = "1//0h249N9l8i3MeCgYIARAAGBESNwF-L9IrUuFrA0lPOkpPI8ECzG9IDHukOew4Ji27Eh5NhDBTliLkhNVPVX6NqEYRULb67UxcP4E";
+    
+    private const string OAuth = "https://accounts.google.com/o/oauth2/v2/auth";
+    private  const string PostEndPoint = "https://oauth2.googleapis.com/token";
+    private const string SearchEndPoint = "https://www.googleapis.com/youtube/v3/search";
+    private const string EndPoint = "https://www.googleapis.com/youtube/v3/videos?part=snippet&id=PEHvT929IAE&key=AIzaSyBpYkRFY2fJdOFHhw8W7hRexY4k2pA14CY";
 
     private static readonly string ClientId;
     private static readonly string ClientSecret;
@@ -78,8 +80,7 @@ public class YoutubeManager
         return new Uri(OAuth + QueryString.Create(parameters).ToString());
     }
 
-    public async Task<Tokens> RequestAccessAndRefreshTokensAsync(string authCode, string originalStateCode,
-        string returnedStateCode)
+    public async Task<Tokens> RequestAccessAndRefreshTokensAsync(string authCode, string originalStateCode, string returnedStateCode)
     {
         if (originalStateCode != returnedStateCode)
             throw new YoutubeApiException("Invalid state code returned by the server.");
@@ -95,7 +96,7 @@ public class YoutubeManager
 
         SetBasicAuthHeader();
         using HttpResponseMessage httpResponse =
-            await HttpClient.PostAsync("https://oauth2.googleapis.com/token", content);
+            await HttpClient.PostAsync(PostEndPoint, content);
 
         httpResponse.EnsureSuccessStatusCode();
 
@@ -126,7 +127,7 @@ public class YoutubeManager
 
         SetBasicAuthHeader();
         using HttpResponseMessage httpResponse =
-            await HttpClient.PostAsync("https://oauth2.googleapis.com/token", content);
+            await HttpClient.PostAsync(PostEndPoint, content);
 
         httpResponse.EnsureSuccessStatusCode();
 
@@ -144,7 +145,7 @@ public class YoutubeManager
 
     public async Task<Track?> GetCurrentlyPlayingAsync()
     {
-        using HttpResponseMessage httpResponse = await HttpClient.GetAsync(EndPoint + "/search");
+        using HttpResponseMessage httpResponse = await HttpClient.GetAsync(EndPoint);
 
         httpResponse.EnsureSuccessStatusCode();
 
@@ -154,7 +155,7 @@ public class YoutubeManager
 
             Track currentTrack = GetTrackFromJson(jsonResponse.RootElement.GetProperty("items"));
 
-            currentTrack.ProgressMs = jsonResponse.RootElement.GetProperty("progress_ms").GetInt32();
+            // currentTrack.ProgressMs = jsonResponse.RootElement.GetProperty("progress_ms").GetInt32();
 
             return currentTrack;
         }
@@ -181,7 +182,7 @@ public class YoutubeManager
         JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
 
         List<Track> searchedTracks = new();
-        foreach (JsonElement item in jsonResponse.RootElement.GetProperty("tracks").GetProperty("items")
+        foreach (JsonElement item in jsonResponse.RootElement.GetProperty("items")
                      .EnumerateArray())
             searchedTracks.Add(GetTrackFromJson(item));
 
@@ -201,16 +202,26 @@ public class YoutubeManager
     {
         Track track = new();
 
-        track.VideoId = item.GetProperty("id").GetString();
-        track.SongName = item.GetProperty("name").GetString();
-        track.AlbumName = item.GetProperty("album").GetProperty("name").GetString();
-        track.DurationMs = item.GetProperty("duration_ms").GetInt32();
+        JsonElement idElement = item.GetProperty("id");
 
-        foreach (JsonElement cover in item.GetProperty("album").GetProperty("images").EnumerateArray())
-            track.CoverSizesUrl.Add(cover.GetProperty("url").GetString());
-
-        foreach (JsonElement artist in item.GetProperty("artists").EnumerateArray())
-            track.ArtistNames.Add(artist.GetProperty("name").GetString());
+        if (idElement.ValueKind == JsonValueKind.Object)
+        {
+            JsonElement videoIdElement = idElement.GetProperty("videoId");
+            if (videoIdElement.ValueKind == JsonValueKind.String)
+            {
+                track.VideoId = videoIdElement.GetString();
+            }
+        }
+        // track.VideoId = item.GetProperty("id").GetProperty("videoId").GetString();
+        // track.SongName = item.GetProperty("name").GetString();
+        // track.AlbumName = item.GetProperty("album").GetProperty("name").GetString();
+        // track.DurationMs = item.GetProperty("duration_ms").GetInt32();
+        //
+        // foreach (JsonElement cover in item.GetProperty("album").GetProperty("images").EnumerateArray())
+        //     track.CoverSizesUrl.Add(cover.GetProperty("url").GetString());
+        //
+        // foreach (JsonElement artist in item.GetProperty("artists").EnumerateArray())
+        //     track.ArtistNames.Add(artist.GetProperty("name").GetString());
 
         return track;
     }
