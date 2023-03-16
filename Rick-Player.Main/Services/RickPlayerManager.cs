@@ -113,7 +113,7 @@ public class RickPlayerManager
             }
         }
     }
-    private async Task SpotifyAddToPlaybackQueueAsync(Track track)
+    private async Task YoutubeAddToPlaybackQueueAsync(Track track)
     {
         try
         {
@@ -254,7 +254,7 @@ public class RickPlayerManager
 
         if (nextVote is not null && !nextVote.IsOnYoutubeQueue && (newestTrack.DurationMs - newestTrack.ProgressMs) < _loopPeriodInMs * 2)
         {
-            await SpotifyAddToPlaybackQueueAsync(nextVote.VotedTrack);
+            await YoutubeAddToPlaybackQueueAsync(nextVote.VotedTrack);
             nextVote.IsOnYoutubeQueue = true;
         }
 
