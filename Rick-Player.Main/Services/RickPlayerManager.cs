@@ -1,4 +1,9 @@
-﻿namespace Rick_Player.Main.Services;
+﻿using Rick_Player.Main.Data;
+using System.Net;
+using Rick_Player.Main.Data;
+using Rick_Player.Main.Services.ResquestAPI;
+
+namespace Rick_Player.Main.Services;
 
 public class RickPlayerManager
 {
