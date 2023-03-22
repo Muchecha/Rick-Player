@@ -3,6 +3,9 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Rick_Player.Main.Services.ResquestAPI;
 
@@ -95,8 +98,7 @@ public class YoutubeManager
         });
 
         SetBasicAuthHeader();
-        using HttpResponseMessage httpResponse =
-            await HttpClient.PostAsync(PostEndPoint, content);
+        using HttpResponseMessage httpResponse = await HttpClient.PostAsync(PostEndPoint, content);
 
         httpResponse.EnsureSuccessStatusCode();
 
@@ -126,8 +128,7 @@ public class YoutubeManager
         });
 
         SetBasicAuthHeader();
-        using HttpResponseMessage httpResponse =
-            await HttpClient.PostAsync(PostEndPoint, content);
+        using HttpResponseMessage httpResponse = await HttpClient.PostAsync(PostEndPoint, content);
 
         httpResponse.EnsureSuccessStatusCode();
 
@@ -145,45 +146,49 @@ public class YoutubeManager
 
     public async Task<Track?> GetCurrentlyPlayingAsync()
     {
-        using HttpResponseMessage httpResponse = await HttpClient.GetAsync(EndPoint);
+        KeyValuePair<string, string>[] parameters = new[]
+        {
+            new KeyValuePair<string, string>("part", "snippet"),
+            new KeyValuePair<string, string>("q", "Link Park"),
+            new KeyValuePair<string, string>("type", "video"),
+            new KeyValuePair<string, string>("maxResults", "1"),
+            new KeyValuePair<string, string>("key", ApiKey)
+        };
 
+        using HttpResponseMessage httpResponse = await HttpClient.GetAsync(SearchEndPoint + QueryString.Create(parameters!));
+        
         httpResponse.EnsureSuccessStatusCode();
 
         if (httpResponse.StatusCode == HttpStatusCode.OK)
         {
             using JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
-
-            Track currentTrack = GetTrackFromJson(jsonResponse.RootElement.GetProperty("items"));
-
+            Track currentTrack = GetTrackFromJsonArray(jsonResponse.RootElement);
+            // Track currentTrack = GetTrackFromJsonArray(jsonResponse.RootElement.GetProperty("items"));
             // currentTrack.ProgressMs = jsonResponse.RootElement.GetProperty("progress_ms").GetInt32();
-
             return currentTrack;
         }
         else
             return null;
     }
-
     public async Task<List<Track>> SearchTracksAsync(string searchFor)
     {
         KeyValuePair<string, string>[] parameters = new[]
         {
             new KeyValuePair<string, string>("part", "snippet"),
             new KeyValuePair<string, string>("q", searchFor),
-            new KeyValuePair<string, string>("type", "youtube#video"),
-            new KeyValuePair<string, string>("maxResults", "10"),
+            new KeyValuePair<string, string>("type", "video"),
+            new KeyValuePair<string, string>("maxResults", "12"),
             new KeyValuePair<string, string>("key", ApiKey)
         };
 
-        using HttpResponseMessage httpResponse =
-            await HttpClient.GetAsync(SearchEndPoint + QueryString.Create(parameters!));
+        using HttpResponseMessage httpResponse = await HttpClient.GetAsync(SearchEndPoint + QueryString.Create(parameters!));
 
         httpResponse.EnsureSuccessStatusCode();
 
         JsonDocument jsonResponse = JsonDocument.Parse(await httpResponse.Content.ReadAsStringAsync());
 
         List<Track> searchedTracks = new();
-        foreach (JsonElement item in jsonResponse.RootElement.GetProperty("items")
-                     .EnumerateArray())
+        foreach (JsonElement item in jsonResponse.RootElement.GetProperty("items").EnumerateArray())
             searchedTracks.Add(GetTrackFromJson(item));
 
         return searchedTracks;
@@ -192,36 +197,43 @@ public class YoutubeManager
     public async Task AddToPlaybackQueueAsync(Track track)
     {
         using HttpResponseMessage httpResponse =
-            await HttpClient.PostAsync(
-                OAuth + "/me/player/queue" + QueryString.Create("uri", $"spotify:track:{track.VideoId}"), null);
+            await HttpClient.PostAsync(OAuth + "/me/player/queue" + QueryString.Create("uri", $"spotify:track:{track.VideoId}"), null);
 
         httpResponse.EnsureSuccessStatusCode();
     }
 
+    public static Track GetTrackFromJsonArray(JsonElement json)
+    {
+        var trackElement = json.GetProperty("items")[0];
+        var track = new Track
+        {
+            VideoId = trackElement.GetProperty("id").GetProperty("videoId").GetString(),
+            Name = trackElement.GetProperty("snippet").GetProperty("title").GetString(),
+            AlbumName = trackElement.GetProperty("snippet").GetProperty("title").GetString()
+        };
+        return track;
+    }
+    
     private Track GetTrackFromJson(JsonElement item)
     {
         Track track = new();
+        track.VideoId = item.GetProperty("id").GetProperty("videoId").GetString();
+        track.Name = item.GetProperty("snippet").GetProperty("title").GetString();
+        track.AlbumName = item.GetProperty("snippet").GetProperty("title").GetString();
+        
+        var urlElement = item.GetProperty("snippet").GetProperty("thumbnails").GetProperty("high").GetProperty("url");
+        var url = urlElement.GetString();
+        track.CoverSizesUrl = new List<string>() { url };
 
-        JsonElement idElement = item.GetProperty("id");
-
-        if (idElement.ValueKind == JsonValueKind.Object)
-        {
-            JsonElement videoIdElement = idElement.GetProperty("videoId");
-            if (videoIdElement.ValueKind == JsonValueKind.String)
-            {
-                track.VideoId = videoIdElement.GetString();
-            }
-        }
-        // track.VideoId = item.GetProperty("id").GetProperty("videoId").GetString();
-        // track.SongName = item.GetProperty("name").GetString();
-        // track.AlbumName = item.GetProperty("album").GetProperty("name").GetString();
+        var artistElement = item.GetProperty("snippet").GetProperty("title");
+        var artist = artistElement.GetString();
+        track.ArtistNames = new List<string>() { artist };
         // track.DurationMs = item.GetProperty("duration_ms").GetInt32();
-        //
-        // foreach (JsonElement cover in item.GetProperty("album").GetProperty("images").EnumerateArray())
-        //     track.CoverSizesUrl.Add(cover.GetProperty("url").GetString());
-        //
+        // foreach (JsonProperty cover in item.GetProperty("thumbnails").GetProperty("default").EnumerateObject())
+        //     track.CoverSizesUrl.Add(cover.("url").GetProperty("url"));
         // foreach (JsonElement artist in item.GetProperty("artists").EnumerateArray())
         //     track.ArtistNames.Add(artist.GetProperty("name").GetString());
+        track.ProgressMs = 0;
 
         return track;
     }

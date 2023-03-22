@@ -1,5 +1,6 @@
 ﻿@page "/search"
 
+@using Rick_Player.Main.Data
 @using Rick_Player.Main.Components
 @using Rick_Player.Main.Services
 @using Rick_Player.Main.Services.ResquestAPI
@@ -68,7 +69,7 @@
         {
             try
             {
-                _searchedTracks = await RickPlayer.SpotifySearchTracksAsync(_userInput);
+                _searchedTracks = await RickPlayer.YoutubeSearchTracksAsync(_userInput);
             }
             catch (Exception ex)
             {

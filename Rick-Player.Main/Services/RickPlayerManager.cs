@@ -1,5 +1,4 @@
-﻿using Rick_Player.Main.Data;
-using System.Net;
+﻿using System.Net;
 using Rick_Player.Main.Data;
 using Rick_Player.Main.Services.ResquestAPI;
 
@@ -35,7 +34,7 @@ public class RickPlayerManager
     }
     #endregion
 
-    #region Spotify Methods
+    #region Youtube Methods
     public Uri YoutubeSignInUri(string state)
     {
         try
@@ -62,7 +61,7 @@ public class RickPlayerManager
             throw;
         }
     }
-    private async Task youtubeRefreshAccessTokenAsync()
+    private async Task YoutubeRefreshAccessTokenAsync()
     {
         try
         {
@@ -70,7 +69,7 @@ public class RickPlayerManager
         }
         catch (Exception)
         {
-            throw;
+            throw new YoutubeApiException("algo deu errado.");
         }
     }
     private async Task<Track> YoutubeGetCurrentlyPlayingAsync()
@@ -93,7 +92,7 @@ public class RickPlayerManager
             }
         }
     }
-    public async Task<List<Track>> SpotifySearchTracksAsync(string searchFor)
+    public async Task<List<Track>> YoutubeSearchTracksAsync(string searchFor)
     {
         try
         {
@@ -109,7 +108,7 @@ public class RickPlayerManager
             }
             catch (Exception)
             {
-                throw;
+                throw new YoutubeApiException("algo deu errado.");
             }
         }
     }
@@ -129,7 +128,7 @@ public class RickPlayerManager
             }
             catch (Exception)
             {
-                throw;
+                throw new YoutubeApiException("algo deu errado.");
             }
         }
     }
@@ -137,7 +136,7 @@ public class RickPlayerManager
 
     #region Voting Queue Methods
     protected virtual void OnVotingQueueUpdate() => VotingQueueUpdateEvent?.Invoke(this, EventArgs.Empty);
-    private Vote MakeDummyVote() => new(new Track().MakeThisDummy(), new Client("0", "Spotify"));
+    private Vote MakeDummyVote() => new(new Track().MakeThisDummy(), new Client("0", "Youtube"));
     private void ResetPriority(int priority)
     {
         Votes.RemoveAt(priority);
@@ -274,11 +273,11 @@ public class RickPlayerManager
         try
         {
             if (exception.StatusCode == HttpStatusCode.Unauthorized)
-                await youtubeRefreshAccessTokenAsync();
+                await YoutubeRefreshAccessTokenAsync();
         }
         catch (Exception)
         {
-            throw;
+             throw new YoutubeApiException("algo deu errado.");
         }
     }
     #endregion
