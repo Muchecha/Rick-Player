@@ -10,6 +10,13 @@
   <ItemGroup>
     <PackageReference Include="MudBlazor" Version="6.1.8" />
     <PackageReference Include="MudBlazor.ThemeManager" Version="1.0.7" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Data\TrackJson.cs" />
+    <Compile Remove="Services\ResquestAPI\YoutubeManagerDois.cs" />
+    <Compile Remove="Services\ResquestAPI\YoutubeManagerTeste.cs" />
   </ItemGroup>
 
 </Project>
