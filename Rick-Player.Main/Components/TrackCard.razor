@@ -5,7 +5,7 @@
 
 <MudPaper Class="pa-4">
     <MudStack Row="true">
-        <MudImage ObjectFit="ObjectFit.Cover" Height="64" Src=@Track.CoverSizesUrl[(int)CoverSize.Default] Alt="Album cover" Elevation="25" Class="rounded-sm"/>
+        <MudImage ObjectFit="ObjectFit.Cover" Height="64" Src=@Track.CoverSizesUrl[(int)CoverSize.High] Alt="Album cover" Elevation="25" Class="rounded-sm"/>
         <MudStack Justify="Justify.Center" Spacing="0">
             <MudText Typo="Typo.body1">
                 @(Track.Name?.Length <= MAX_CHARS ? Track.Name : Track.Name?.Substring(0, MAX_CHARS) + "...")
