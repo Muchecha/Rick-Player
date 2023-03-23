@@ -1,0 +1,98 @@
+﻿@page "/queue"
+
+@using Rick_Player.Main.Components
+@using Rick_Player.Main.Data
+@using Rick_Player.Main.Services
+
+@inject RickPlayerManager RickPlayer
+@inject ProtectedLocalStorage LocalStorage
+
+<PageTitle>Filas de Prioridade</PageTitle>
+
+<MudStack>
+    <MudText Align="Align.Center" Typo="Typo.h4">
+        Filas de Prioridade
+    </MudText>
+
+    @if (RickPlayer.Votes is not null)
+    {
+        @foreach (int i in Enumerable.Range(0, RickPlayer.Votes.Count))
+        {
+            <MudDivider />
+
+            <MudText Align="Align.Center" Typo="Typo.h6">Prioridade @(i + 1)</MudText>
+
+            @foreach (var vote in RickPlayer.Votes[i])
+            {
+                @if (vote.Client.Id == _thisClient?.Id && !vote.IsOnYoutubeQueue)
+                {
+                    <TrackCard Track="vote.VotedTrack" Client="vote.Client" OnClickCallback="@RemoveVote" BtnFunc="TrackCard.BtnFunctionality.Remove" />
+                }
+                else
+                {
+                    <TrackCard Track="vote.VotedTrack" Client="vote.Client" />
+                }
+            }
+        }
+
+
+        <MudDivider />
+
+
+        <MudText Align="Align.Center" Typo="Typo.h5" Class="mt-4">
+            O que são as Filas de Prioridade?
+        </MudText>
+        <MudText Align="Align.Center" Typo="Typo.body1">
+            A fila de prioridade é a forma como o Sparkfly gerencia os seus votos. Você pode mandar quantas músicas o seu coração quiser!
+        </MudText>
+        <MudText Align="Align.Center" Typo="Typo.body1">
+            Porém, se aquele seu amigo tímido ganhar coragem e adicionar uma música pela primeira vez, saiba que o voto dele terá prioridade.
+        </MudText>
+    }
+</MudStack>
+
+@code {
+    private Client? _thisClient;
+    private ExecutionContext? _originalContext;
+
+    protected override void OnInitialized()
+    {
+        _originalContext = ExecutionContext.Capture();
+
+        RickPlayer.TimerUpdateEvent += UpdateUi;
+        RickPlayer.VotingQueueUpdateEvent += UpdateUi;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _thisClient = (await LocalStorage.GetAsync<Client>("this_client")).Value;
+
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async void UpdateUi(object? source, EventArgs args)
+    {
+        /* FIXED: page falling back to default culture - https://github.com/dotnet/aspnetcore/issues/28521 */
+        if (_originalContext is not null)
+        {
+            ExecutionContext.Restore(_originalContext);
+
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void RemoveVote(Track track)
+    {
+        if (_thisClient is not null)
+            RickPlayer.RemoveVote(track, _thisClient);
+    }
+
+    public void Dispose()
+    {
+        RickPlayer.TimerUpdateEvent -= UpdateUi;
+        RickPlayer.VotingQueueUpdateEvent -= UpdateUi;
+    }
+}
