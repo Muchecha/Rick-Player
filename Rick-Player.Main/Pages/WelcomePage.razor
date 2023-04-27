@@ -9,53 +9,70 @@
 @inject NavigationManager NavManager
 @inject ProtectedLocalStorage LocalStorage
 
-<PageTitle>Seja bem-vindo ao Rick Player!!</PageTitle>
+<PageTitle>Rick Player!!</PageTitle>
 
 
 <MudStack Spacing="8">
     <MudText Typo="Typo.h3" Align="Align.Center">
-        <bold>Bem-vindos ao Rick Player</bold>
+        <MudIcon Icon="@Icons.Custom.Uncategorized.Bacteria" Size="Size.Large"/>
+        <bold>Rick Player</bold>
     </MudText>
 
     <MudText Typo="Typo.h6" Align="Align.Center">
         Rick Player é um aplicativo de código aberto que permite que você e seus amigos ouçam música juntos usando a fila do Youtube.
     </MudText>
 
-
     <MudDivider/>
-
 
     <MudText Typo="Typo.body1" Align="Align.Center">
         Antes de começarmos, diga-nos o seu nome na caixa abaixo. Isso ajudará seus colegas de festa a identificar em quais músicas incríveis você votou e quão incrível é (ou não) seu gosto musical!
     </MudText>
-    <MudText Typo="Typo.body1" Align="Align.Center">
-        Brincadeirinha, aqui temos espaço para todos os gostos! De Metallica à Lady Gaga, faça do Rick Player a sua casa!
-    </MudText>
-
-    <MudTextField @bind-Value="_clientNameInput" Label="Seja criativo! Você pode usar o seu emoji favorito ao lado do seu nome."
-                  HelperText="Seja criativo! Você pode usar o seu emoji favorito ao lado do seu nome." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Outlined.Edit" AdornmentColor="Color.Primary"/>
-
-
-    <MudDivider/>
-
-
     <MudText Class="mb-n6" Typo="Typo.body1" Align="Align.Center">
-        Se você é um convidado, você já está pronto para começar a ouvir suas músicas favoritas e as de seus amigos, basta pressionar este botão para inicar 👇
+        e você foi convidado, já pode começar a ouvir suas músicas favoritas e as de seus amigos, basta pressionar o botão abaixo para iniciar 👇
     </MudText>
+    <MudTextField @bind-Value="_clientNameInput" Label="Nome" HelperText="Por favor evite nomes estranhos."
+                  Variant="Variant.Outlined" Adornment="Adornment.End"
+                  AdornmentIcon="@Icons.Outlined.BorderColor" AdornmentColor="Color.Warning"/>
+    @if (_showErrorDialog)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-n4">
+            Por favor, para continuar, escreva o seu nome na caixa acima e tente novamente!
+        </MudAlert>
+    }
+
     <MudButton OnClick="@GuestSignInAsync" Variant="Variant.Filled" Color="Color.Primary">
         ENTRAR COMO CONVIDADO
     </MudButton>
 
-    @if (_showErrorDialog)
-    {
-        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-n4">
-            Por favor, para continuar, escreva o seu nome na caixa acima e tente de novo!
-        </MudAlert>
-    }
+    <MudDivider/>
 
     <MudText Class="mt-2 mb-n6" Typo="Typo.body1" Align="Align.Center">
-        Se você é o dono da festa, faça o login usando sua conta do Spotify para que o Rick Player possa enfileirar as músicas para você e seus amigos!
+        Se você é o anfitrião da festa, faça login usando sua conta do Youtube para que o Rick Player possa adicionar músicas à fila para você e seus amigos. Aproveite ao máximo essa experiência musical incrível!
     </MudText>
+    <MudTextField @bind-Value="_clientLoginInput" Label="LOGIN"
+                  Variant="Variant.Outlined" Adornment="Adornment.End"
+                  AdornmentIcon="@Icons.Outlined.BorderColor" AdornmentColor="Color.Warning"/>
+    @if (_loginShowErrorDialog)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-n4">
+            Por favor, para continuar, escreva o seu LOGIN na caixa acima e tente novamente!
+        </MudAlert>
+    }
+    <MudTextField @bind-Value="_clientSenhaInput" Label="SENHA"
+                  Variant="Variant.Outlined" Adornment="Adornment.End"
+                  AdornmentIcon="@Icons.Outlined.BorderColor" AdornmentColor="Color.Warning"/>
+    @if (_senhaShowErrorDialog)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-n4">
+            Por favor, para continuar, escreva sua SENHA na caixa acima e tente novamente!
+        </MudAlert>
+    }
+    @if (_loginSenhaShowErrorDialog)
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-n4">
+                Login ou Senha incorretas!
+            </MudAlert>
+        }
     <MudButton OnClick="@YoutubeSignInAsync" Variant="Variant.Filled" Color="Color.Success">
         ENTRAR COM GOOGLE
     </MudButton>
@@ -66,14 +83,19 @@
         private const int _MAX_CHARS = 26;
 
     private string? _clientNameInput;
+    private string? _clientLoginInput;
+    private string? _clientSenhaInput;
     private bool _showErrorDialog = false;
+    private bool _loginShowErrorDialog = false;
+    private bool _senhaShowErrorDialog = false;
+    private bool _loginSenhaShowErrorDialog = false;
 
     private async Task YoutubeSignInAsync()
     {
-        if (!ValidateName())
+        if (!ValidateNameSenha())
             return;
 
-        await SaveClientAsync();
+        await SaveClientMainAsync();
 
         string state = new Random().Next().ToString();
         await LocalStorage.SetAsync("state", state);
@@ -101,6 +123,39 @@
         NavManager.NavigateTo("/help");
     }
 
+    private bool ValidateNameSenha()
+    {
+        if (_clientLoginInput is null || _clientSenhaInput is null)
+        {
+            if (_clientLoginInput is null)
+            {
+                _loginShowErrorDialog = true;
+                return false;
+            }
+            else
+            {
+                _senhaShowErrorDialog = true;
+                return false;
+            }
+        }
+        else
+        {
+            if (_clientLoginInput == "Muchecha" & _clientSenhaInput == "Much3ch4")
+            {
+                if (_clientLoginInput.Length > _MAX_CHARS)
+                    _clientNameInput = _clientLoginInput.Substring(0, _MAX_CHARS);
+
+                return true;
+            }
+            else
+            {
+                _loginSenhaShowErrorDialog = true;
+                return false;
+            }
+            return false;
+        }
+    }
+
     private bool ValidateName()
     {
         if (_clientNameInput is null)
@@ -120,6 +175,15 @@
     private async Task SaveClientAsync()
     {
         Client thisClient = new Client(Guid.NewGuid().ToString(), _clientNameInput ??= "ERROR_NO_NAME_FOUND");
+
+        RickPlayer.Clients.Add(thisClient);
+
+        await LocalStorage.SetAsync("this_client", thisClient);
+    }
+    
+    private async Task SaveClientMainAsync()
+    {
+        Client thisClient = new Client(Guid.NewGuid().ToString(), _clientLoginInput ??= "ERROR_NO_NAME_FOUND");
 
         RickPlayer.Clients.Add(thisClient);
 

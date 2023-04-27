@@ -9,7 +9,15 @@
 @inject NavigationManager NavigationManager
 @inject RickPlayerManager RickPlayer
 
-<PageTitle>Ouvindo @_currentVote?.VotedTrack.ArtistNames[0]</PageTitle>
+@if (
+    // _currentVote != null 
+    //  && _currentVote.VotedTrack != null 
+    //  && _currentVote.VotedTrack.ArtistNames != null &&
+     _currentVote.VotedTrack.ArtistNames.Count > 0
+    )
+{
+    <PageTitle>Ouvindo @_currentVote.VotedTrack.ArtistNames[0]</PageTitle>
+}
 
 <MudStack>
     @if (_currentVote is not null && _currentVote.VotedTrack.VideoId != "0")
@@ -23,6 +31,7 @@
                 <MudDivider Class="my-2" DividerType="DividerType.Middle" />
 
                 <MudText Align="Align.Center" Typo="Typo.body1">@_currentVote.VotedTrack.Name</MudText>
+                
                 <MudText Align="Align.Center" Class="my-n2" Typo="Typo.body2">@_currentVote.VotedTrack.ArtistNames[0]</MudText>
                 <MudText Align="Align.Center" Typo="Typo.caption" Class="mt-2">Suggested by <strong>@_currentVote.Client.Name</strong>!</MudText>
             </MudStack>
