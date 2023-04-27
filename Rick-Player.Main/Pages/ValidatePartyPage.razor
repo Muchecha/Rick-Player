@@ -1,8 +1,8 @@
 @page "/validate"
 @page "/validate/{code}/{state}"
 
-@using Rick_Player.Main.Services
 @using Rick_Player.Main.Data
+@using Rick_Player.Main.Services
 @using Rick_Player.Main.Services.ResquestAPI
 
 @inject RickPlayerManager RickPlayer
@@ -32,8 +32,8 @@
                     await LocalStorage.DeleteAsync("state");
 
                     RickPlayer.StartTimer();
-    // delete all clients connected because a new host has signed in
-
+                    // delete all clients connected because a new host has signed in
+                    
                     NavManager.NavigateTo("/help");
                 }
                 catch (Exception ex)
@@ -48,4 +48,6 @@
                 NavManager.NavigateTo("/unhandled-error" + QueryString.Create("message", "Invalid returned response from Spotify Authentication."));
         }
     }
+    
 }
+

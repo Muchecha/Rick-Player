@@ -3,26 +3,26 @@
 
 @inject RickPlayerManager RickPlayer
 
-<MudPaper Class="pa-4">
-    <MudStack Row="true">
-        <MudImage ObjectFit="ObjectFit.Cover" Height="64" Src=@Track.CoverSizesUrl[(int)CoverSize.High] Alt="Album cover" Elevation="25" Class="rounded-sm"/>
+<MudPaper Class="pa-4" Elevation="3" Style="align-items: center">
+    <MudStack Row="true" >
+        <MudImage ObjectFit="ObjectFit.Cover" Height="140" Src=@Track.CoverSizesUrl[(int)CoverSize.High] Alt="Album cover" Elevation="3" Class="rounded-sm"/>
         <MudStack Justify="Justify.Center" Spacing="0">
-            <MudText Typo="Typo.body1">
+            <MudText Typo="Typo.body1" Align="Align.Center">
                 @(Track.Name?.Length <= MAX_CHARS ? Track.Name : Track.Name?.Substring(0, MAX_CHARS) + "...")
             </MudText>
-            <MudText Typo="Typo.body2">@Track.ArtistNames[0]</MudText>
+            <MudText Typo="Typo.body2" Align="Align.Center">@Track.ArtistNames[0]</MudText>
             @if (Client is not null)
             {
                 <MudText Typo="Typo.caption">Sugerido por @Client.Name</MudText>
             }
         </MudStack>
-
         <MudSpacer/>
+        
         <div>
             @switch (BtnFunc)
             {
                 case BtnFunctionality.Add:
-                    <MudIconButton OnClick="OnButtonClick" Icon="@Icons.Material.Filled.PlaylistAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
+                    <MudIconButton OnClick="OnButtonClick" Icon="@Icons.Material.Filled.PostAdd" Color="Color.Success" aria-label="add to queue"></MudIconButton>
                     break;
 
                 case BtnFunctionality.Remove:

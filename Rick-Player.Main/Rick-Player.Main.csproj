@@ -19,4 +19,8 @@
     <Compile Remove="Services\ResquestAPI\YoutubeManagerTeste.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Remove="Pages\Index.razor" />
+  </ItemGroup>
+
 </Project>

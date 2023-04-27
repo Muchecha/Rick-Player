@@ -9,7 +9,7 @@
 <MudLayout>
     <AppBar ShowMenuButton="true" OnClickCallback="DrawerToggle"/>
 
-    <MudDrawer @bind-Open="_isDrawerOpen" Elevation="1" Variant="@DrawerVariant.Mini" ClipMode="DrawerClipMode.Always">
+    <MudDrawer @bind-Open="_isDrawerOpen" Elevation="1" Variant="@DrawerVariant.Temporary" Anchor="Anchor.Start">
         <NavMenu />
     </MudDrawer>
 
@@ -20,8 +20,8 @@
 </MudLayout>
 
 @code {
-    bool _isDrawerOpen = true;
-    bool _isDarkMode = true;
+    bool _isDrawerOpen = false;
+    bool _isDarkMode = false;
 
     void DrawerToggle()
     {

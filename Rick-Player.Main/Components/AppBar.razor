@@ -1,17 +1,22 @@
-<MudAppBar Elevation="0" Color="Color.Primary">
+<MudAppBar Color="Color.Tertiary" Elevation="2">
     @if (ShowMenuButton)
     {
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => OnButtonClick())" />
+        <MudIconButton Icon="@Icons.Material.Filled.Notes" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => OnButtonClick())"/>
     }
-    <MudSpacer />
-    <h1>Rick Player</h1>
-    <MudSpacer />
-    <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/BuenoVini/SparkflyBlazor" Target="_blank" />
+
+    <MudIcon Icon="@Icons.Custom.Uncategorized.Bacteria" Size="Size.Large"/>
+    <MudSpacer/>
+    <MudIconButton Icon="@Icons.Custom.Brands.LinkedIn" Color="Color.Inherit" Link="https://www.linkedin.com/in/murilo-nascimento-48b32b170/" Target="_blank"/>
+    <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/Muchecha" Target="_blank"/>
 </MudAppBar>
 
 @code {
-    [Parameter] public EventCallback OnClickCallback { get; set; }
-    [Parameter] public bool ShowMenuButton { get; set; } = false;
 
-    private async Task OnButtonClick() => await OnClickCallback.InvokeAsync();
+    [Parameter]
+    public EventCallback OnClickCallback { get; set; }
+
+    [Parameter]
+    public bool ShowMenuButton { get; set; } = false;
+
+    public async Task OnButtonClick() => await OnClickCallback.InvokeAsync();
 }

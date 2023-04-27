@@ -21,11 +21,11 @@ public class RickPlayerManager
     private YoutubeManager.Tokens _tokens;
     private int _loopPeriodInMs = 0;
 
-    public RickPlayerManager(TimerManager timerManager, IWebHostEnvironment HostEnvironment)
+    public RickPlayerManager(TimerManager timerManager, IWebHostEnvironment hostEnvironment)
     {
         _timerManager = timerManager;
 
-        _youtubeManager = new YoutubeManager(HostEnvironment.IsProduction() ? "https://sparkflyblazor.azurewebsites.net/validate" : "https://localhost:5001/validate");
+        _youtubeManager = new YoutubeManager(hostEnvironment.IsProduction() ? "https://sparkflyblazor.azurewebsites.net/validate" : "https://localhost:5001/validate");
 
         CurrentlyPlayingVote = MakeDummyVote();
         PreviouslyPlayedVotes = new List<Vote>();
@@ -214,7 +214,7 @@ public class RickPlayerManager
 
     #region Timer Methods
     protected virtual void OnTimerUpdate() => TimerUpdateEvent?.Invoke(this, EventArgs.Empty);
-    public void StartTimer(int seconds = 5)
+    public void StartTimer(int seconds = 100)
     {
         if (_timerManager.HasStarted)
             StopTimer();
